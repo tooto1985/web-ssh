@@ -1,9 +1,6 @@
 $(function() {
-    var socket = io("http://127.0.0.1:8080");
+    var socket = io(location.host);
     var list;
-    socket.on("errormessage", function(msg) {
-        console.log(msg);
-    });
     socket.on("list", function(data) {
         list = data[1];
         $("#list").html("");
@@ -17,12 +14,8 @@ $(function() {
         }
     });
     socket.on("result", function(data) {
-        if (data === "=====TASKEND=====") {
-            alert("Completed!");
-        } else {
-            $(".console").append(data);
-            $(".console").scrollTop($(".console").prop("scrollHeight") - $(".console").height());
-        }
+        $(".console").append(data);
+        $(".console").scrollTop($(".console").prop("scrollHeight") - $(".console").height());
     });
     $("#list").change(function() {
         for (var i = 0; i < list.length; i++) {
@@ -63,6 +56,6 @@ $(function() {
         socket.emit("test", obj);
     });
     $("#toggleConsole").click(function() {
-        $(this).text(($(".console").toggle().is(":visible") ? "Hide" : "Show") + "  Console");
+        $(this).text(($(".console").toggle().is(":visible") ? "Hide" : "Show") + " Console");
     });
 });

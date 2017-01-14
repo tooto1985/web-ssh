@@ -1,6 +1,8 @@
 var port = 8080;
 var express = require("express");
 var ansiHTML = require("ansi-html");
+var Convert = require('ansi-to-html');
+var convert = new Convert();
 var sshCommand = require("./modules/sshCommand");
 var Settings = require("./modules/Settings");
 var app = express();
@@ -14,7 +16,7 @@ io.on("connection", function(socket) {
     socket.on("remove", function(name) {
         data.splice(data.indexOf(data.filter(function(a) {
             return a.name === name;
-        })[0]),1);
+        })[0]), 1);
         settings.write(data);
         socket.emit("list", [null, data]);
     });
@@ -24,18 +26,18 @@ io.on("connection", function(socket) {
         socket.emit("list", [obj.name, data]);
     });
     socket.on("test", function(obj) {
-        sshCommand(obj.host, obj.user, obj.pass, obj.command, true, function(err, data) {
-            if (!err) {
-                if (data) {
-                    data = data.replace(/</g, "&lt;");
-                    data = data.replace(/>/g, "&gt;");
-                    data = data.replace(/\n/g, "<br>");
-                    data = data.replace(/ /g, "&nbsp;");
-                    socket.emit("result", ansiHTML(data));
-                }
-            } else {
-                socket.emit("errormessage", err);
+        sshCommand(obj.host, obj.user, obj.pass, obj.command, function(data) {
+            if (typeof data === "string") {
+                console.log(data);
+                data = data.replace(/</g, "&lt;");
+                data = data.replace(/>/g, "&gt;");
+                data = data.replace(/\n/g, "<br>");
+                data = data.replace(/ /g, "&nbsp;");
+                data = ansiHTML(convert.toHtml(data));
+            } else if (typeof data === "object") {
+                data = data.toString();
             }
+            socket.emit("result", data);
         });
     });
 });
