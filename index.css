@@ -1,0 +1,24 @@
+.container-fluid {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+.form-group {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+.right {
+    float: right;
+}
+.console {
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(204, 204, 204);
+    border-image: initial;
+    border-radius: 4px;
+    background-color: black;
+    color: white;
+    height: 600px;
+    overflow: auto;
+    font-family: monospace;
+    display: none;
+}
