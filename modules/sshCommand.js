@@ -10,7 +10,7 @@ function sshCommand(host, user, pass, command, callback) {
             callback(err);
         });
         ssh.on("ready", function(err) {
-            ssh.exec(command, {
+            ssh.exec(command + "\nsleep .1", {
                 pty: true,
                 out: function(stdout) {
                     callback(stdout);
