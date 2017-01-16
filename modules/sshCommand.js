@@ -1,26 +1,24 @@
-var SSH = require("simple-ssh");
+var SSH2Shell = require("ssh2shell");
 function sshCommand(host, user, pass, command, callback) {
     if (host && user && pass) {
-        var ssh = new SSH({
-            host: host,
-            user: user,
-            pass: pass
+        var ssh = new SSH2Shell({
+            server: {
+                host: host,
+                userName: user,
+                password: pass
+            },
+            commands: command.split("\n"),
+            asciiFilter: "asciiFilter",
+            textColorFilter: "textColorFilter",
+            idleTimeOut: 60000,
+            onCommandProcessing: function(command, response, sshObj) {
+                callback(response);    
+            },
+            onError: function(err) {
+                callback(err);
+            }       
         });
-        ssh.on("error", function(err) {
-            callback(err);
-        });
-        ssh.on("ready", function(err) {
-            ssh.exec(command, {
-                pty: true,
-                out: function(stdout) {
-                    callback(stdout);
-                },
-                err: function(stdout) {
-                    callback(stdout);
-                }
-            });
-        });
-        ssh.start();
+        ssh.connect();
     } else {
         callback("host or user or pass is empty");
     }

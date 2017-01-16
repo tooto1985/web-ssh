@@ -28,7 +28,6 @@ io.on("connection", function(socket) {
     socket.on("test", function(obj) {
         sshCommand(obj.host, obj.user, obj.pass, obj.command, function(data) {
             if (typeof data === "string") {
-                console.log(data);
                 data = data.replace(/</g, "&lt;");
                 data = data.replace(/>/g, "&gt;");
                 data = data.replace(/\n/g, "<br>");
