@@ -13,6 +13,37 @@ app.use(express.static("./"));
 io.on("connection", function(socket) {
     var data = settings.read() || [];
     socket.emit("list", [null, data]);
+    socket.on("add", function(obj) {
+        if (data.filter(function(a) {
+                return a.name === obj.name;
+            }).length > 0) {
+            socket.emit("alert", "Already have the same name.");
+        } else {
+            data.push(obj);
+            settings.write(data);
+            socket.emit("list", [obj.name, data]);
+        }
+    });
+    socket.on("save", function(obj) {
+        data[data.indexOf(data.filter(function(a) {
+            return a.name === obj.name;
+        })[0])] = obj;
+        settings.write(data);
+        socket.emit("list", [obj.name, data]);
+    });
+    socket.on("rename", function(obj) {
+        if (data.filter(function(a) {
+                return a.name === obj.newname;
+            }).length > 0) {
+            socket.emit("alert", "Already have the same name.");
+        } else {
+            data[data.indexOf(data.filter(function(a) {
+                return a.name === obj.oldname;
+            })[0])].name = obj.newname;
+            settings.write(data);
+            socket.emit("list", [obj.newname, data]);
+        }
+    });
     socket.on("remove", function(name) {
         data.splice(data.indexOf(data.filter(function(a) {
             return a.name === name;
@@ -20,15 +51,9 @@ io.on("connection", function(socket) {
         settings.write(data);
         socket.emit("list", [null, data]);
     });
-    socket.on("add", function(obj) {
-        data.push(obj);
-        settings.write(data);
-        socket.emit("list", [obj.name, data]);
-    });
-    socket.on("test", function(obj) {
+    socket.on("run", function(obj) {
         sshCommand(obj.host, obj.user, obj.pass, obj.command, function(data) {
             if (typeof data === "string") {
-                console.log(data);
                 data = data.replace(/</g, "&lt;");
                 data = data.replace(/>/g, "&gt;");
                 data = data.replace(/\n/g, "<br>");
