@@ -1,6 +1,5 @@
 var SSH = require("simple-ssh");
-
-function sshCommand(host, user, pass, command, isReal, callback) {
+var sshCommand = function(host, user, pass, command, isReal, callback) {
     if (host && user && pass) {
         var ssh = new SSH({
             host: host,

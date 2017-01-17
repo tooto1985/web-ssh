@@ -1,5 +1,5 @@
 var fileio = require("./fileio");
-function Settings(savepath) {
+var Settings = function(savepath) {
     this.savepath = savepath;
 }
 Settings.prototype.read = function() {
