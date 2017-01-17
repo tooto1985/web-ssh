@@ -9,6 +9,20 @@ var app = express();
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
 var settings = new Settings("/data/save.json");
+app.get("/task/:name", function(req, res, next) {
+    var data = settings.read() || [];
+    var task = data[data.indexOf(data.filter(function(a) {
+        return a.name === req.params.name;
+    })[0])];
+    if (task) {
+        sshCommand(task.host, task.user, task.pass, task.command, false, function(data) {
+            console.log(data);
+            res.send(data);
+        });
+    } else {
+        res.send("no task");
+    }
+});
 app.use(express.static("./"));
 io.on("connection", function(socket) {
     var data = settings.read() || [];
@@ -52,7 +66,7 @@ io.on("connection", function(socket) {
         socket.emit("list", [null, data]);
     });
     socket.on("run", function(obj) {
-        sshCommand(obj.host, obj.user, obj.pass, obj.command, function(data) {
+        sshCommand(obj.host, obj.user, obj.pass, obj.command, true, function(data) {
             if (typeof data === "string") {
                 data = data.replace(/</g, "&lt;");
                 data = data.replace(/>/g, "&gt;");

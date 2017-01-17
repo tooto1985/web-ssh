@@ -1,5 +1,6 @@
 var SSH = require("simple-ssh");
-function sshCommand(host, user, pass, command, callback) {
+
+function sshCommand(host, user, pass, command, isReal, callback) {
     if (host && user && pass) {
         var ssh = new SSH({
             host: host,
@@ -10,14 +11,23 @@ function sshCommand(host, user, pass, command, callback) {
             callback(err);
         });
         ssh.on("ready", function(err) {
-            ssh.exec(command + "\nsleep .1", {
-                pty: true,
-                out: function(stdout) {
+            var log = "";
+            var taskEnd = "=====TASKEND=====";
+            var todo = function(stdout) {
+                if (isReal) {
                     callback(stdout);
-                },
-                err: function(stdout) {
-                    callback(stdout);
+                } else {
+                    if (stdout.indexOf(taskEnd) > -1) {
+                        callback(log.replace(taskEnd, ""));
+                    } else {
+                        log += stdout;
+                    }
                 }
+            };
+            ssh.exec(command + (isReal ? "" : ("\n" + taskEnd)) + "\nsleep .1", {
+                pty: true,
+                out: todo,
+                err: todo
             });
         });
         ssh.start();
