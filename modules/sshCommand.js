@@ -23,7 +23,7 @@ var sshCommand = function(host, user, pass, command, isReal, callback) {
                     }
                 }
             };
-            ssh.exec(command + (isReal ? "" : ("\n" + taskEnd)) + "\nsleep .1", {
+            ssh.exec(command + (isReal ? "" : ("\necho " + taskEnd)) + "\nsleep .1", {
                 pty: true,
                 out: todo,
                 err: todo
