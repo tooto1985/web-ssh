@@ -23,20 +23,29 @@ $(function() {
         }
         return cmd;
     }
-
     var socket = io(location.host);
-    var list;
+    var listJson;
+    var dataJson;
+    function getList(selector, data) {
+        var json = data[1];
+        $(selector).html("");
+        for (var i = 0; i < json.length; i++) {
+            $(selector).append("<option>" + json[i].name + "</option>");
+        }
+        setTimeout(function() {
+            if (!data[0]) {
+                $(selector).change();
+            } else {
+                $(selector).val(data[0]).change();
+            }
+        });
+        return json;
+    }
     socket.on("list", function(data) {
-        list = data[1];
-        $("#list").html("");
-        for (var i = 0; i < list.length; i++) {
-            $("#list").append("<option>" + list[i].name + "</option>");
-        }
-        if (!data[0]) {
-            $("#list").change();
-        } else {
-            $("#list").val(data[0]).change();
-        }
+        listJson = getList("#list", data);
+    });
+    socket.on("data", function(data) {
+        dataJson = getList("#data", data);
     });
     socket.on("result", function(data) {
         $(".console").append(data);
@@ -45,21 +54,32 @@ $(function() {
     socket.on("alert", function(text) {
         alert(text);
     });
-    $("#list").change(function() {
-        for (var i = 0; i < list.length; i++) {
-            if (list[i].name === $("#list").val()) {
-                $("#host").val(list[i].host);
-                $("#user").val(list[i].user);
-                $("#pass").val(list[i].pass);
-                $("#command").val(list[i].command);
+    function getData(selector, json, callback) {
+        for (var i = 0; i < json.length; i++) {
+            if (json[i].name === $(selector).val()) {
+                callback(json[i]);
             }
         }
+    }
+    $("#list,#data").change(function() {
+        var id = $(this).attr("id");
+        getData("#" + id, id === "list" ? listJson : dataJson, function(data) {
+            if (id === "list") {
+                $("#host").val(data.host);
+                $("#user").val(data.user);
+                $("#pass").val(data.pass);
+                $("#command").val(data.command);
+            } else {
+                $("#parameter").val(data.parameter);
+            }
+
+        });
     });
     $("#add,#add2").click(function() {
         var name = prompt("Please enter a name.");
         if (name) {
             var obj;
-            // if ($(this).attr("id") === "add") {
+            if ($(this).attr("id") === "add") {
                 obj = {
                     host: $("#host").val(),
                     user: $("#user").val(),
@@ -67,12 +87,12 @@ $(function() {
                     name: name,
                     command: $("#command").val()
                 };
-            // } else {
-            //     obj = {
-            //         name: name,
-            //         parameter: $("#parameter").val()
-            //     };
-            // }
+            } else {
+                obj = {
+                    name: name,
+                    parameter: $("#parameter").val()
+                };
+            }
             socket.emit("add", obj);
         }
     });
@@ -86,6 +106,7 @@ $(function() {
         };
         socket.emit("save", obj);
     });
+    $("#save2").attr("disabled",true);
     $("#rename").click(function() {
         var name = prompt("Please update the name.", $("#list").val());
         if (name) {
@@ -106,7 +127,7 @@ $(function() {
             host: $("#host").val(),
             user: $("#user").val(),
             pass: $("#pass").val(),
-            command: execute($("#command").val(),$("#parameter").val())
+            command: execute($("#command").val(), $("#parameter").val())
         };
         socket.emit("run", obj);
     });

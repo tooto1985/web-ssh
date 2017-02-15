@@ -10,6 +10,7 @@ var server = require("http").Server(app);
 var io = require("socket.io")(server);
 var settings = new Settings();
 var saveJson = "./data/save.json";
+var dataJson = "./data/data.json";
 app.get("/task/:name", function(req, res, next) {
     var data = settings.read(saveJson) || [];
     var task = data[data.indexOf(data.filter(function(a) {
@@ -27,16 +28,18 @@ app.get("/task/:name", function(req, res, next) {
 app.use(express.static("./"));
 io.on("connection", function(socket) {
     socket.emit("list", [null, settings.read(saveJson) || []]);
+    socket.emit("data", [null, settings.read(dataJson) || []]);
     socket.on("add", function(obj) {
-        var data = settings.read(saveJson) || [];
+        var isCommand = obj.command !== undefined;
+        var data = settings.read(isCommand ? saveJson : dataJson) || [];
         if (data.filter(function(a) {
                 return a.name === obj.name;
             }).length > 0) {
             socket.emit("alert", "Already have the same name.");
         } else {
             data.push(obj);
-            settings.write(saveJson, data);
-            socket.emit("list", [obj.name, data]);
+            settings.write(isCommand ? saveJson : dataJson, data);
+            socket.emit(isCommand ? "list" : "data", [obj.name, data]);
         }
     });
     socket.on("save", function(obj) {

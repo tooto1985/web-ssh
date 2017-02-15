@@ -25,3 +25,19 @@
 .padding0 {
     padding: 0;
 }
+.padding0:after {
+    content: 'Command';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: 50px;
+    color: rgba(0,0,0,0.2);
+    line-height: 50px;
+    z-index: -1;
+}
+.padding0 textarea {
+    background-color: transparent;
+}
+.parameter:after {
+    content: 'Parameter';
+}
