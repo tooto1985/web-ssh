@@ -1,4 +1,27 @@
 $(function() {
+    function execute(cmd, params) {
+        if (typeof params === "string") {
+            params = params.split("\n").reduce(function(p, n) {
+                var data = n.split("=");
+                var key = data[0];
+                var value = data[1];
+                p[key] = value;
+                return p;
+            }, {});
+        }
+        var keys = cmd.match(/{{([0-9a-zA-Z=]*)}}/g).reduce(function(p, n) {
+            var data = n.replace(/{{([0-9a-zA-Z=]*)}}/g, "$1").split("=");
+            var key = data[0]
+            var value = data[1];
+            p[n] = params[key] ? params[key] : (value ? value : "");
+            return p;
+        }, {});
+        for (var a in keys) {
+            cmd = cmd.replace(new RegExp(a, "g"), keys[a]);
+        }
+        return cmd;
+    }
+
     var socket = io(location.host);
     var list;
     socket.on("list", function(data) {
@@ -73,7 +96,7 @@ $(function() {
             host: $("#host").val(),
             user: $("#user").val(),
             pass: $("#pass").val(),
-            command: $("#command").val()
+            command: execute($("#command").val(),$("#parameter").val())
         };
         socket.emit("run", obj);
     });
