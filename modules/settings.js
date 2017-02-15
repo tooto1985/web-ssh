@@ -1,11 +1,9 @@
 var fileio = require("./fileio");
-var Settings = function(savepath) {
-    this.savepath = savepath;
-}
-Settings.prototype.read = function() {
-    return JSON.parse(fileio.readFile(this.savepath));
+var Settings = function() {};
+Settings.prototype.read = function(path) {
+	return JSON.parse(fileio.readFile(path));
 };
-Settings.prototype.write = function(json) {
-    return fileio.writeFile(this.savepath, JSON.stringify(json, null, "\t"));
+Settings.prototype.write = function(path, json) {
+	return fileio.writeFile(path, JSON.stringify(json, null, "\t"));
 };
 module.exports = Settings;

@@ -8,9 +8,10 @@ var Settings = require("./modules/Settings");
 var app = express();
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
-var settings = new Settings("/data/save.json");
+var settings = new Settings();
+var saveJson = "./data/save.json";
 app.get("/task/:name", function(req, res, next) {
-    var data = settings.read() || [];
+    var data = settings.read(saveJson) || [];
     var task = data[data.indexOf(data.filter(function(a) {
         return a.name === req.params.name;
     })[0])];
@@ -25,27 +26,29 @@ app.get("/task/:name", function(req, res, next) {
 });
 app.use(express.static("./"));
 io.on("connection", function(socket) {
-    var data = settings.read() || [];
-    socket.emit("list", [null, data]);
+    socket.emit("list", [null, settings.read(saveJson) || []]);
     socket.on("add", function(obj) {
+        var data = settings.read(saveJson) || [];
         if (data.filter(function(a) {
                 return a.name === obj.name;
             }).length > 0) {
             socket.emit("alert", "Already have the same name.");
         } else {
             data.push(obj);
-            settings.write(data);
+            settings.write(saveJson, data);
             socket.emit("list", [obj.name, data]);
         }
     });
     socket.on("save", function(obj) {
+        var data = settings.read(saveJson) || [];
         data[data.indexOf(data.filter(function(a) {
             return a.name === obj.name;
         })[0])] = obj;
-        settings.write(data);
+        settings.write(saveJson, data);
         socket.emit("list", [obj.name, data]);
     });
     socket.on("rename", function(obj) {
+        var data = settings.read(saveJson) || [];
         if (data.filter(function(a) {
                 return a.name === obj.newname;
             }).length > 0) {
@@ -54,15 +57,16 @@ io.on("connection", function(socket) {
             data[data.indexOf(data.filter(function(a) {
                 return a.name === obj.oldname;
             })[0])].name = obj.newname;
-            settings.write(data);
+            settings.write(saveJson, data);
             socket.emit("list", [obj.newname, data]);
         }
     });
     socket.on("remove", function(name) {
+        var data = settings.read(saveJson) || [];
         data.splice(data.indexOf(data.filter(function(a) {
             return a.name === name;
         })[0]), 1);
-        settings.write(data);
+        settings.write(saveJson, data);
         socket.emit("list", [null, data]);
     });
     socket.on("run", function(obj) {

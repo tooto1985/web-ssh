@@ -9,15 +9,17 @@ $(function() {
                 return p;
             }, {});
         }
-        var keys = cmd.match(/{{([0-9a-zA-Z=]*)}}/g).reduce(function(p, n) {
-            var data = n.replace(/{{([0-9a-zA-Z=]*)}}/g, "$1").split("=");
-            var key = data[0]
-            var value = data[1];
-            p[n] = params[key] ? params[key] : (value ? value : "");
-            return p;
-        }, {});
-        for (var a in keys) {
-            cmd = cmd.replace(new RegExp(a, "g"), keys[a]);
+        if (cmd.match(/{{([^\}\}]*)}}/g)) {
+            var keys = cmd.match(/{{([^\}\}]*)}}/g).reduce(function(p, n) {
+                var data = n.replace(/{{([^\}\}]*)}}/g, "$1").split("=");
+                var key = data[0]
+                var value = data[1];
+                p[n] = params[key] ? params[key] : (value ? value : "");
+                return p;
+            }, {});
+            for (var a in keys) {
+                cmd = cmd.replace(new RegExp(a, "g"), keys[a]);
+            }
         }
         return cmd;
     }
@@ -53,16 +55,24 @@ $(function() {
             }
         }
     });
-    $("#add").click(function() {
+    $("#add,#add2").click(function() {
         var name = prompt("Please enter a name.");
         if (name) {
-            var obj = {
-                host: $("#host").val(),
-                user: $("#user").val(),
-                pass: $("#pass").val(),
-                name: name,
-                command: $("#command").val()
-            };
+            var obj;
+            // if ($(this).attr("id") === "add") {
+                obj = {
+                    host: $("#host").val(),
+                    user: $("#user").val(),
+                    pass: $("#pass").val(),
+                    name: name,
+                    command: $("#command").val()
+                };
+            // } else {
+            //     obj = {
+            //         name: name,
+            //         parameter: $("#parameter").val()
+            //     };
+            // }
             socket.emit("add", obj);
         }
     });
