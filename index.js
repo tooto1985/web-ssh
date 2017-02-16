@@ -26,6 +26,7 @@ $(function() {
     var socket = io(location.host);
     var listJson;
     var dataJson;
+
     function getList(selector, data) {
         var json = data[1];
         $(selector).html("");
@@ -54,6 +55,7 @@ $(function() {
     socket.on("alert", function(text) {
         alert(text);
     });
+
     function getData(selector, json, callback) {
         for (var i = 0; i < json.length; i++) {
             if (json[i].name === $(selector).val()) {
@@ -96,17 +98,24 @@ $(function() {
             socket.emit("add", obj);
         }
     });
-    $("#save").click(function() {
-        var obj = {
-            host: $("#host").val(),
-            user: $("#user").val(),
-            pass: $("#pass").val(),
-            name: $("#list").val(),
-            command: $("#command").val()
-        };
+    $("#save,#save2").click(function() {
+        var obj;
+        if ($(this).attr("id") === "save") {
+            obj = {
+                host: $("#host").val(),
+                user: $("#user").val(),
+                pass: $("#pass").val(),
+                name: $("#list").val(),
+                command: $("#command").val()
+            };
+        } else {
+            obj = {
+                name: $("#data").val(),
+                parameter: $("#parameter").val()
+            };
+        }
         socket.emit("save", obj);
     });
-    $("#save2").attr("disabled",true);
     $("#rename").click(function() {
         var name = prompt("Please update the name.", $("#list").val());
         if (name) {
@@ -116,9 +125,11 @@ $(function() {
             });
         }
     });
+    $("#rename2").attr("disabled", true);
     $("#remove").click(function() {
         socket.emit("remove", $("#list").val());
     });
+    $("#remove2").attr("disabled", true);
     $("#run").click(function() {
         if ($(".console").html("").is(":hidden")) {
             $("#toggleConsole").click();

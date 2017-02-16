@@ -11,8 +11,8 @@ fs.writeFile = function(filename, data) {
 fs.readFile = function(filename) {
     try {
         var dir = path.dirname(filename);
-        if (!fs.existsSync("." + dir)) {
-            fs.mkdirSync("." + dir);
+        if (!fs.existsSync("./" + dir)) {
+            fs.mkdirSync("./" + dir);
         }
         return fs.readFileSync("./" + filename).toString();
     } catch (e) {

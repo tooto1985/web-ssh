@@ -9,8 +9,8 @@ var app = express();
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
 var settings = new Settings();
-var saveJson = "./data/save.json";
-var dataJson = "./data/data.json";
+var saveJson = "data/save.json";
+var dataJson = "data/data.json";
 app.get("/task/:name", function(req, res, next) {
     var data = settings.read(saveJson) || [];
     var task = data[data.indexOf(data.filter(function(a) {
@@ -43,12 +43,13 @@ io.on("connection", function(socket) {
         }
     });
     socket.on("save", function(obj) {
-        var data = settings.read(saveJson) || [];
+        var isCommand = obj.command !== undefined;
+        var data = settings.read(isCommand ? saveJson : dataJson) || [];
         data[data.indexOf(data.filter(function(a) {
             return a.name === obj.name;
         })[0])] = obj;
-        settings.write(saveJson, data);
-        socket.emit("list", [obj.name, data]);
+        settings.write(isCommand ? saveJson : dataJson, data);
+        socket.emit(isCommand ? "list" : "data", [obj.name, data]);
     });
     socket.on("rename", function(obj) {
         var data = settings.read(saveJson) || [];
