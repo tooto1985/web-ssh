@@ -116,20 +116,39 @@ $(function() {
         }
         socket.emit("save", obj);
     });
-    $("#rename").click(function() {
-        var name = prompt("Please update the name.", $("#list").val());
+    $("#rename,#rename2").click(function() {
+        var name = prompt("Please update the name.", $(this).attr("id") === "rename" ? $("#list").val() : $("#data").val());
         if (name) {
-            socket.emit("rename", {
-                oldname: $("#list").val(),
-                newname: name
-            });
+            var obj;
+            if ($(this).attr("id") === "rename") {
+                obj = {
+                    oldname: $("#list").val(),
+                    newname: name,
+                    command: true
+                };
+            } else {
+                obj = {
+                    oldname: $("#data").val(),
+                    newname: name
+                };
+            }
+            socket.emit("rename", obj);
         }
     });
-    $("#rename2").attr("disabled", true);
-    $("#remove").click(function() {
-        socket.emit("remove", $("#list").val());
+    $("#remove,#remove2").click(function() {
+        var obj;
+        if ($(this).attr("id") === "remove") {
+            obj = {
+                name: $("#list").val(),
+                command: true
+            };
+        } else {
+            obj = {
+                name: $("#data").val()
+            };
+        }
+        socket.emit("remove", obj);
     });
-    $("#remove2").attr("disabled", true);
     $("#run").click(function() {
         if ($(".console").html("").is(":hidden")) {
             $("#toggleConsole").click();

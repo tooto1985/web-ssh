@@ -52,7 +52,8 @@ io.on("connection", function(socket) {
         socket.emit(isCommand ? "list" : "data", [obj.name, data]);
     });
     socket.on("rename", function(obj) {
-        var data = settings.read(saveJson) || [];
+        var isCommand = obj.command !== undefined;
+        var data = settings.read(isCommand ? saveJson : dataJson) || [];
         if (data.filter(function(a) {
                 return a.name === obj.newname;
             }).length > 0) {
@@ -61,17 +62,18 @@ io.on("connection", function(socket) {
             data[data.indexOf(data.filter(function(a) {
                 return a.name === obj.oldname;
             })[0])].name = obj.newname;
-            settings.write(saveJson, data);
-            socket.emit("list", [obj.newname, data]);
+            settings.write(isCommand ? saveJson : dataJson, data);
+            socket.emit(isCommand ? "list" : "data", [obj.newname, data]);
         }
     });
-    socket.on("remove", function(name) {
-        var data = settings.read(saveJson) || [];
+    socket.on("remove", function(obj) {
+        var isCommand = obj.command !== undefined;
+        var data = settings.read(isCommand ? saveJson : dataJson) || [];
         data.splice(data.indexOf(data.filter(function(a) {
-            return a.name === name;
+            return a.name === obj.name;
         })[0]), 1);
-        settings.write(saveJson, data);
-        socket.emit("list", [null, data]);
+        settings.write(isCommand ? saveJson : dataJson, data);
+        socket.emit(isCommand ? "list" : "data", [null, data]);
     });
     socket.on("run", function(obj) {
         sshCommand(obj.host, obj.user, obj.pass, obj.command, true, function(data) {
