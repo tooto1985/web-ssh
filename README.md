@@ -14,5 +14,5 @@ npm install
 npm start
 ```
 
-Open browser and type http://127.0.0.1:8081
+Open your browser and enter the URL http://127.0.0.1:8081
 

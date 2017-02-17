@@ -25,7 +25,7 @@ app.get("/task/:name", function(req, res, next) {
         res.send("no task");
     }
 });
-app.use(express.static("./"));
+app.use(express.static("./public"));
 io.on("connection", function(socket) {
     socket.emit("list", [null, settings.read(saveJson) || []]);
     socket.emit("data", [null, settings.read(dataJson) || []]);

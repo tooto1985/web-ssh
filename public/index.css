@@ -20,7 +20,6 @@
     height: 600px;
     overflow: auto;
     font-family: monospace;
-    display: none;
 }
 .padding0 {
     padding: 0;
