@@ -116,6 +116,27 @@ $(function() {
         }
         socket.emit("save", obj);
     });
+    $("#up,#up2,#down,#down2").click(function() {
+        var id = $(this).attr("id");
+        var obj ={};
+        if (id.substr(id.length - 1) === "2") {
+            obj.name = $("#data").val();
+            if (id === "up2") {
+                obj.move = "up";
+            } else {
+                obj.move = "down";
+            }
+        } else {
+            obj.name = $("#list").val();
+            if (id === "up") {
+                obj.move = "up";
+            } else {
+                obj.move = "down";
+            }
+            obj.command = true;
+        }
+        socket.emit("move", obj);
+    });
     $("#rename,#rename2").click(function() {
         var name = prompt("Please update the name.", $(this).attr("id") === "rename" ? $("#list").val() : $("#data").val());
         if (name) {
@@ -160,6 +181,7 @@ $(function() {
             command: execute($("#command").val(), $("#parameter").val())
         };
         socket.emit("run", obj);
+        console.log(obj);
     });
     $("#toggleConsole").click(function() {
         $(this).text(($(".console").toggle().is(":visible") ? "Hide" : "Show") + " Console");

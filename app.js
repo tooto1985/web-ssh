@@ -5,6 +5,7 @@ var Convert = require('ansi-to-html');
 var convert = new Convert();
 var sshCommand = require("./modules/sshCommand");
 var Settings = require("./modules/Settings");
+var tools = require("./modules/tools");
 var app = express();
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
@@ -48,6 +49,26 @@ io.on("connection", function(socket) {
         data[data.indexOf(data.filter(function(a) {
             return a.name === obj.name;
         })[0])] = obj;
+        settings.write(isCommand ? saveJson : dataJson, data);
+        socket.emit(isCommand ? "list" : "data", [obj.name, data]);
+    });
+    socket.on("move", function(obj) {
+        var isCommand = obj.command !== undefined;
+        var data = settings.read(isCommand ? saveJson : dataJson) || [];
+        var indexA = data.indexOf(data.filter(function(a) {
+            return a.name === obj.name;
+        })[0]);
+        var indexB = indexA;
+        if (obj.move === "up") {
+            if (indexA !== 0) {
+                indexB = indexA - 1;
+            }
+        } else {
+            if (indexA !== data.length - 1) {
+                indexB = indexA + 1;
+            }
+        }
+        tools.swap(data, indexA, indexB);
         settings.write(isCommand ? saveJson : dataJson, data);
         socket.emit(isCommand ? "list" : "data", [obj.name, data]);
     });
