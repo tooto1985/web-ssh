@@ -12,14 +12,47 @@ var io = require("socket.io")(server);
 var settings = new Settings();
 var saveJson = "data/save.json";
 var dataJson = "data/data.json";
+
+function execute(cmd, params) {
+    if (typeof params === "string") {
+        params = params.split("\n").reduce(function(p, n) {
+            var data = n.split("=");
+            var key = data[0];
+            var value = data[1];
+            p[key] = value;
+            return p;
+        }, {});
+    }
+    if (cmd.match(/{{([^\}\}]*)}}/g)) {
+        var keys = cmd.match(/{{([^\}\}]*)}}/g).reduce(function(p, n) {
+            var data = n.replace(/{{([^\}\}]*)}}/g, "$1").split("=");
+            var key = data[0]
+            var value = data[1];
+            p[n] = params[key] ? params[key] : (value ? value : "");
+            return p;
+        }, {});
+        for (var a in keys) {
+            cmd = cmd.replace(new RegExp(a, "g"), keys[a]);
+        }
+    }
+    return cmd;
+}
 app.get("/task/:name", function(req, res, next) {
     var data = settings.read(saveJson) || [];
     var task = data[data.indexOf(data.filter(function(a) {
         return a.name === req.params.name;
     })[0])];
     if (task) {
-        sshCommand(task.host, task.user, task.pass, task.command, false, function(data) {
-            console.log(data);
+        var params = "";
+        for (var a in req.query) {
+            if (!params) {
+                params = a + "=" + req.query[a];
+            } else {
+                params += "\n" + a + "=" + req.query[a];
+            }
+        }
+        sshCommand(task.host, task.user, task.pass, execute(task.command, params), false, function(data) {
+            res.set("Access-Control-Allow-Origin", "*");
             res.send(data);
         });
     } else {
